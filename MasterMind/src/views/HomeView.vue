@@ -27,6 +27,10 @@ const goToGame = () => {
     router.push('/game')
   }
 }
+
+const goToStats = () => {
+  router.push('/stats')
+}
 </script>
 
 <template>
@@ -59,7 +63,10 @@ const goToGame = () => {
       </ul>
     </div>
 
-    <button @click="goToGame">Jouer</button>
+    <div class="buttons">
+      <button @click="goToGame">Jouer</button>
+      <button @click="goToStats">Stats</button>
+    </div>
   </div>
 </template>
 
@@ -101,11 +108,18 @@ h1 {
 .rules {
   background: #f9f9f9;
   padding: 15px;
+
+.buttons {
+  display: flex;
+  gap: 10px;
+}
+
   margin: 20px 0;
 }
 
 button {
   padding: 10px 20px;
+  margin: 1%;
   background: #333;
   color: white;
   border: none;
