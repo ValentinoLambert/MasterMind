@@ -1,51 +1,64 @@
 <script setup>
-import { inject, ref, computed, onMounted } from 'vue'
+import { inject, ref, computed, onMounted, watch } from 'vue'
 import { useGame } from '../services/game'
 import { useRouter } from 'vue-router'
+import CodeField from '../components/CodeField.vue'
 
 const pseudo = inject('pseudo')
 const router = useRouter()
 const { code, attempts, state, generateCode, validateAttempt } = useGame()
-const currentGuess = ref(['', '', '', ''])
+const saisie = ref(Array(4).fill(''))
 
 onMounted(() => {
   generateCode()
 })
 
+watch(state, (newState) => {
+  if (newState === 'won' || newState === 'lost') {
+    saveToLocalStorage()
+  }
+})
+
+const saveToLocalStorage = () => {
+  const scores = JSON.parse(localStorage.getItem('mastermind-scores') || '[]')
+  const lastAttempt = attempts.value[attempts.value.length - 1]
+  
+  scores.push({
+    pseudo: pseudo.value,
+    code: [...code.value],
+    resultat: state.value === 'won' ? 'succès' : 'échec',
+    derniereCombinaison: lastAttempt ? lastAttempt.essai : null,
+    bienPlaces: lastAttempt ? lastAttempt.bienPlaces : null,
+    malPlaces: lastAttempt ? lastAttempt.malPlaces : null,
+    date: new Date().toISOString()
+  })
+  
+  localStorage.setItem('mastermind-scores', JSON.stringify(scores))
+}
+
 const remainingAttempts = computed(() => {
   return 10 - attempts.value.length
 })
 
-const canSubmit = computed(() => {
-  return currentGuess.value.every(v => v !== '') && state.value === 'playing'
-})
-
-const submitGuess = () => {
-  if (!canSubmit.value) return
-  
-  const guess = currentGuess.value.map(Number)
-  validateAttempt(guess)
-  currentGuess.value = ['', '', '', '']
-}
-
-const handleInput = (index, event) => {
-  const value = event.target.value
-  if (value.length > 1) {
-    currentGuess.value[index] = value.slice(-1)
-  }
-  if (value && index < 3) {
-    const nextInput = event.target.nextElementSibling
-    if (nextInput) nextInput.focus()
+const handleValidate = () => {
+  if (saisie.value.every(v => v !== '') && state.value === 'playing') {
+    const guess = saisie.value.map(Number)
+    validateAttempt(guess)
+    saisie.value = Array(4).fill('')
   }
 }
 
 const restart = () => {
   generateCode()
-  currentGuess.value = ['', '', '', '']
+  saisie.value = Array(4).fill('')
 }
 
 const goToHome = () => {
   router.push('/home')
+}
+
+const goToStats = () => {
+  router.push('/stats')
 }
 </script>
 
@@ -59,38 +72,25 @@ const goToHome = () => {
 
     <div v-if="state === 'playing'" class="play-section">
       <h2>Entrez votre code</h2>
-      <div class="inputs">
-        <input 
-          v-for="(_, index) in 4" 
-          :key="index"
-          v-model="currentGuess[index]"
-          @input="handleInput(index, $event)"
-          type="number"
-          min="0"
-          max="9"
-          maxlength="1"
-          class="digit-input"
-        />
-      </div>
-      <button @click="submitGuess" :disabled="!canSubmit">Valider</button>
+      <CodeField v-model="saisie" :length="4" @validate="handleValidate" />
     </div>
 
     <div v-if="state === 'won'" class="result">
       <h2>Bravo {{ pseudo }}, tu as gagné !</h2>
       <button @click="restart">Rejouer</button>
-      <button @click="goToHome">Accueil</button>
+      <button @click="goToStats">Voir les scores</button>
     </div>
 
     <div v-if="state === 'lost'" class="result">
       <h2>T'as perdu {{ pseudo }}, encore une fois...</h2>
       <p>Le code était : {{ code.join(' ') }}</p>
       <button @click="restart">Rejouer</button>
-      <button @click="goToHome">Accueil</button>
+      <button @click="goToStats">Voir les scores</button>
     </div>
 
     <div class="attempts-list" v-if="attempts.length > 0">
       <h3>Historique</h3>
-      <div v-for="(attempt, index) in attempts" :key="index" class="attempt">
+      <div v-for="(attempt, index) in attempts" :key="index" class="attempt" :class="{ 'new-attempt': index === attempts.length - 1 }">
         <span class="number">{{ index + 1 }}.</span>
         <span class="guess">{{ attempt.essai.join(' ') }}</span>
         <span class="result-text">
@@ -192,5 +192,20 @@ button:disabled {
 
 .result-text {
   color: #666;
+}
+
+.new-attempt {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 </style>
