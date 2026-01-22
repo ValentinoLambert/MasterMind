@@ -20,7 +20,7 @@ const goToGame = () => {
       <label for="pseudo">Votre pseudo :</label>
       <input 
         id="pseudo" 
-        v-model="pseudo.value" 
+        v-model="pseudo" 
         type="text" 
         placeholder="Entrez votre pseudo"
       />
