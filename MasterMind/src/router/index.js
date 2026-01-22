@@ -28,4 +28,18 @@ const router = createRouter({
   ],
 })
 
+let pseudoRef = null
+
+export function setPseudoRef(ref) {
+  pseudoRef = ref
+}
+
+router.beforeEach((to, from, next) => {
+  if (to.path !== '/home' && (!pseudoRef || !pseudoRef.value.trim())) {
+    next('/home')
+  } else {
+    next()
+  }
+})
+
 export default router

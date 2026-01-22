@@ -1,9 +1,26 @@
 <script setup>
-import { inject } from 'vue'
+import { inject, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useGame } from '../services/game'
 
 const pseudo = inject('pseudo')
 const router = useRouter()
+const { code, generateCode } = useGame()
+
+let intervalId = null
+
+onMounted(() => {
+  generateCode()
+  intervalId = setInterval(() => {
+    generateCode()
+  }, 2000)
+})
+
+onUnmounted(() => {
+  if (intervalId) {
+    clearInterval(intervalId)
+  }
+})
 
 const goToGame = () => {
   if (pseudo.value.trim()) {
@@ -14,11 +31,16 @@ const goToGame = () => {
 
 <template>
   <div class="home">
-    <h1>MasterMind - Accueil</h1>
+    <header>
+      <h1>MasterMind</h1>
+      <div class="code-animation">
+        {{ code.join(' ') }}
+      </div>
+    </header>
     
     <div class="pseudo-section">
       <label for="pseudo">Votre pseudo :</label>
-      <input 
+      <input    
         id="pseudo" 
         v-model="pseudo" 
         type="text" 
@@ -48,8 +70,22 @@ const goToGame = () => {
   padding: 20px;
 }
 
+header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
 h1 {
   color: #333;
+  margin-bottom: 10px;
+}
+
+.code-animation {
+  font-size: 2em;
+  font-weight: bold;
+  color: #666;
+  letter-spacing: 10px;
+  min-height: 40px;
 }
 
 .pseudo-section {

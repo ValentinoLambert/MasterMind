@@ -4,7 +4,7 @@
 <template>
   <div class="game">
     <h1>Game View</h1>
-    <p>La page de jeu sera ici</p>
+    <p>La page de jeu</p>
   </div>
 </template>
 
@@ -17,6 +17,6 @@
 }
 
 h1 {
-  color: #42b983;
+  color: #333;
 }
 </style>
