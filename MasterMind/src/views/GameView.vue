@@ -7,7 +7,9 @@ import CodeField from '../components/CodeField.vue'
 const pseudo = inject('pseudo')
 const router = useRouter()
 const { code, attempts, state, generateCode, validateAttempt } = useGame()
-const saisie = ref(Array(4).fill(''))
+const gameConfig = inject('gameConfig', { length: 4, maxAttempts: 10 })
+const codeLength = computed(() => Math.min(gameConfig.length, 10))
+const saisie = ref(Array(codeLength.value).fill(''))
 
 onMounted(() => {
   generateCode()
@@ -16,7 +18,7 @@ onMounted(() => {
 watch(state, (newState) => {
   if (newState === 'won' || newState === 'lost') {
     saveToLocalStorage()
-  }
+  } 
 })
 
 const saveToLocalStorage = () => {
@@ -37,20 +39,20 @@ const saveToLocalStorage = () => {
 }
 
 const remainingAttempts = computed(() => {
-  return 10 - attempts.value.length
+  return gameConfig.maxAttempts - attempts.value.length
 })
 
 const handleValidate = () => {
   if (saisie.value.every(v => v !== '') && state.value === 'playing') {
     const guess = saisie.value.map(Number)
     validateAttempt(guess)
-    saisie.value = Array(4).fill('')
+    saisie.value = Array(codeLength.value).fill('')
   }
 }
 
 const restart = () => {
   generateCode()
-  saisie.value = Array(4).fill('')
+  saisie.value = Array(codeLength.value).fill('')
 }
 
 const goToHome = () => {
@@ -72,7 +74,7 @@ const goToStats = () => {
 
     <div v-if="state === 'playing'" class="play-section">
       <h2>Entrez votre code</h2>
-      <CodeField v-model="saisie" :length="4" @validate="handleValidate" />
+      <CodeField v-model="saisie" :length="gameConfig.length" @validate="handleValidate" />
     </div>
 
     <div v-if="state === 'won'" class="result">

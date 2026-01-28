@@ -6,6 +6,7 @@ import { useGame } from '../services/game'
 const pseudo = inject('pseudo')
 const router = useRouter()
 const { code, generateCode } = useGame()
+const gameConfig = inject('gameConfig', { length: 4, maxAttempts: 10 })
 
 let intervalId = null
 
@@ -50,6 +51,13 @@ const goToStats = () => {
         type="text" 
         placeholder="Entrez votre pseudo"
       />
+    </div>
+
+    <div class="config">
+      <label>Longueur du code :</label>
+      <input type="number" v-model.number="gameConfig.length" min="1" max="10" />
+      <label>Max tentatives :</label>
+      <input type="number" v-model.number="gameConfig.maxAttempts" min="1" max="50" />
     </div>
 
     <div class="rules">
@@ -112,6 +120,19 @@ h1 {
 .buttons {
   display: flex;
   gap: 10px;
+}
+
+.config {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0 20px 0;
+}
+
+.config input {
+  width: 80px;
+  padding: 6px;
 }
 
   margin: 20px 0;

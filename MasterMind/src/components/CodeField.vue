@@ -47,7 +47,7 @@ const handleValidate = () => {
         min="0"
         max="9"
         maxlength="1"
-        class="digit-input"
+        class="digit-input" 
       />
     </div>
     <button @click="handleValidate">Valider</button>
