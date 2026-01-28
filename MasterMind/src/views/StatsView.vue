@@ -1,9 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, inject } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const scores = ref([])
+const pseudo = inject('pseudo')
 
 onMounted(() => {
   const data = localStorage.getItem('mastermind-scores')
@@ -24,6 +25,29 @@ const clearScores = () => {
   localStorage.removeItem('mastermind-scores')
   scores.value = []
 }
+
+const logout = () => {
+  if (pseudo) pseudo.value = ''
+  router.push('/home')
+}
+
+const top3 = computed(() => {
+  const byPseudo = {}
+  for (const s of scores.value) {
+    const p = s.pseudo || 'Anonymous'
+    if (!byPseudo[p]) byPseudo[p] = { pseudo: p, games: 0, wins: 0 }
+    byPseudo[p].games += 1
+    if (s.resultat === 'succès') byPseudo[p].wins += 1
+  }
+  const arr = Object.values(byPseudo).map(x => ({
+    pseudo: x.pseudo,
+    games: x.games,
+    wins: x.wins,
+    ratio: x.games ? x.wins / x.games : 0
+  }))
+  arr.sort((a, b) => b.ratio - a.ratio || b.wins - a.wins)
+  return arr.slice(0, 3)
+})
 </script>
 
 <template>
@@ -34,6 +58,16 @@ const clearScores = () => {
       <button @click="goToHome">Accueil</button>
       <button @click="goToGame">Nouvelle partie</button>
       <button v-if="scores.length > 0" @click="clearScores">Effacer</button>
+      <button v-if="pseudo && pseudo.trim()" @click="logout">Déconnexion</button>
+    </div>
+
+    <div v-if="scores.length > 0" class="top3">
+      <h2>Top 3</h2>
+      <ol>
+        <li v-for="p in top3" :key="p.pseudo">
+          {{ p.pseudo }} — victoires: {{ p.wins }} / {{ p.games }} (ratio: {{ (p.ratio*100).toFixed(0) }}%)
+        </li>
+      </ol>
     </div>
 
     <div v-if="scores.length === 0" class="no-scores">

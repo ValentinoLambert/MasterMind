@@ -32,6 +32,11 @@ const goToGame = () => {
 const goToStats = () => {
   router.push('/stats')
 }
+
+const logout = () => {
+  if (pseudo) pseudo.value = ''
+  router.push('/home')
+}
 </script>
 
 <template>
@@ -74,6 +79,7 @@ const goToStats = () => {
     <div class="buttons">
       <button @click="goToGame">Jouer</button>
       <button @click="goToStats">Stats</button>
+      <button v-if="pseudo && pseudo.trim()" @click="logout">Déconnexion</button>
     </div>
   </div>
 </template>
